@@ -1,0 +1,214 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:head>
+        <title>Controle de Caixa</title>
+    </h:head>
+    <h:body>
+        <style type="text/css">
+            .verde {
+                background-color: #36FE2C !important;
+                background-image: none !important;
+                color: #000000 !important;
+            }
+        </style>
+        <style type="text/css">
+            .vermelho {
+                background-color: #FF0000 !important;
+                background-image: none !important;
+                color: #000000 !important;
+            }
+        </style>
+        <ui:insert name="topo">
+            <ui:include src="menu.xhtml" />
+        </ui:insert>
+        <h:form id="frmCadastro" >
+            <p:dialog modal="true" widgetVar="dlgCadastro" id="panelDlgCadastro" 
+                      header="Novo Lançamento"
+                      draggable="true" closable="true" resizable="false">
+                <h:panelGrid columns="2" id="gridDados" styleClass="styleGrid">
+                    <h:outputLabel value="Caixa: " for="cdCaixa"/>
+                    <p:selectOneMenu value="#{controleCaixaMB.novoLcto.caixa}" id="cdCaixa"
+                                     required="true" requiredMessage="O caixa deve ser informado.">
+                        <f:selectItem itemLabel="Selecione" itemValue="#{null}" />
+                        <f:selectItems value="#{caixaMB.caixas}" var="caixa"
+                                       itemLabel="#{caixa.descricao}" itemValue="#{caixa}" />
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Categoria: " for="cdCateg"/>
+                    <p:selectOneMenu value="#{controleCaixaMB.novoLcto.categoria}" id="cdCateg"
+                                     required="true" requiredMessage="A categoria deve ser informada.">
+                        <f:selectItem itemLabel="Selecione" itemValue="#{null}" />
+                        <f:selectItems value="#{categoriaMB.categorias}" var="categ"
+                                       itemLabel="#{categ.descricao}" itemValue="#{categ}" />
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Entidade: " for="cdPessoa"/>
+                    <p:selectOneMenu value="#{controleCaixaMB.novoLcto.pessoa}" id="cdPessoa" 
+                                     onchange="atualizarNovoParceiro(this.value)" widgetVar="pessoaSelec">
+                        <f:selectItem itemLabel="Selecione" itemValue="#{null}" />
+                        <f:selectItems value="#{pessoaMB.pessoas}" var="pessoa"
+                                       itemLabel="#{pessoa.descricao}" itemValue="#{pessoa}" />
+                    </p:selectOneMenu>
+                    <h:outputLabel id="cdPessoaTxtLb" value="" for="cdPessoaTxt" />
+                    <p:inputText id="cdPessoaTxt" value="#{controleCaixaMB.novaPessoa}" />
+                    <h:outputLabel for="dtLcto" value="Data: " />
+                    <p:calendar id="dtLcto" value="#{controleCaixaMB.novoLcto.dataHora}" pattern="dd/MM/yyyy HH:mm:ss" />
+                    <h:outputLabel value="Valor Movimentado: " for="qtValor"/>
+                    <p:inputText id="qtValor" value="#{controleCaixaMB.novoLcto.valor}" type="number"
+                                 validatorMessage="Informe um valor maior que zero.">
+                        <f:validateLongRange minimum="0" />
+                    </p:inputText>
+                </h:panelGrid>                
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="ui-icon ui-icon-disk" action="#{controleCaixaMB.salvarLancamento}" process="@form"
+				     update=":frmConsulta frmCadastro:gridDados :growl" style="left:auto;font-weight:bold;"/>                    
+                </f:facet>
+            </p:dialog>
+        </h:form>
+        <h:form id="frmConsulta">
+            <p:confirmDialog id="confDialog"
+                             message="Deseja realmente remover o lançamento de #{controleCaixaMB.novoLcto.valorStr} feito em #{controleCaixaMB.novoLcto.dataHora.toLocaleString()} no caixa #{controleCaixaMB.novoLcto.caixa.descricao}?"
+                             header="Confirmação" severity="alert" widgetVar="confirmDelete">
+                <center>
+                    <p:commandButton update=":frmConsulta :growl"
+                                     oncomplete="PF('confirmDelete').hide()" icon="ui-icon-check "
+                                     value="Confirmar" action="#{controleCaixaMB.deletaLancamento()}" />
+                    <p:commandButton id="decline" value="Cancelar"
+                                     onclick="PF('confirmDelete').hide()" type="button"
+                                     icon="ui-icon-circle-close" />
+                </center>
+            </p:confirmDialog>            
+            <p:dataTable id="dados" var="lcto" value="#{controleCaixaMB.lancamentos}"
+                         rowStyleClass="#{lcto.categoria.tipo == 'Saida' ? 'vermelho' : 'verde'}"
+                         selection="#{controleCaixaMB.novoLcto}" selectionMode="single" rowKey="#{lcto.id}"
+                         emptyMessage="Nenhum lançamento encontrado.">
+                <f:facet name="header">
+                    <table>
+                        <tr>
+                            <td class="noPadding">
+                                <div align="left">
+                                    <p:commandButton value="Novo Lançamento" styleClass="ui-priority-primary" 
+                                              update="frmCadastro" oncomplete="PF('dlgCadastro').show();"
+                                              action="#{controleCaixaMB.setNovoLcto(null)}" icon="ui ui-icon-document" />
+                                </div>                                
+                            </td>
+                            <td class="noPadding">              
+                                <div/>                                
+                            </td>
+                            <td class="noPadding">
+                                <div align="right">
+                                    <p:commandButton value="Atualizar" action="#{controleCaixaMB.setLancamentos(null)}"
+                                                     update=":frmConsulta:dados" icon="ui ui-icon-refresh" 
+                                                     id="btAtualizar"/>
+                                </div>                                
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="noPadding">
+                                <div align="left">
+                                    <h:outputLabel value="Caixa: " for="cdCaixaFiltro"/>
+                                    <p:selectOneMenu value="#{controleCaixaMB.caixaSelecionado}" id="cdCaixaFiltro" >
+                                        <f:selectItems value="#{caixaMB.caixas}" var="caixa"
+                                                       itemLabel="#{caixa.descricao}" itemValue="#{caixa}" />
+                                        <f:ajax event="change" render=":frmConsulta:dados" listener="#{controleCaixaMB.setLancamentos(null)}"/>
+                                    </p:selectOneMenu>
+                                </div>                                
+                            </td>
+                            <td class="noPadding">              
+                                <div>
+                                    Lançamentos
+                                </div>                                 
+                            </td>
+                            <td class="noPadding">
+                                <div align="right">
+                                    <div>
+                                        <h:outputLabel for="dtIni" value="Data: " />
+                                        <p:calendar id="dtIni" value="#{controleCaixaMB.filtroDataIni}" pattern="dd/MM/yyyy HH:mm:ss" />
+                                    </div>
+                                    <div>
+                                        <h:outputLabel for="dtFin" value=" até " />
+                                        <p:calendar id="dtFin" value="#{controleCaixaMB.filtroDataFin}" pattern="dd/MM/yyyy HH:mm:ss" />
+                                    </div>
+                                </div>                                
+                            </td>                            
+                        </tr>
+                    </table>
+                </f:facet>    
+                <f:facet name="footer">
+                    <table>
+                        <tr>
+                            <td class="noPadding">
+                                <div align="left">
+                                    <p:commandLink value="Excel" ajax="false" immediate="true">
+                                            <p:dataExporter type="xls" target="dados"
+                                                            fileName="#{'lancamentosCaixa'.concat(controleCaixaMB.caixaSelecionado.codigo)}" />
+                                    </p:commandLink>
+                                </div>
+                            </td>
+                            <td class="noPadding">
+                                <div align="right">
+                                    <h:outputLabel for="txtSaldoCaixa" value="Saldo Caixa: " />
+                                    <h:outputText id="txtSaldoCaixa" value="#{controleCaixaMB.caixaSelecionado.saldo}" >
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputText>
+                                    <h:outputLabel for="txtSaldoPeriodo" value=" - Saldo Período: " />
+                                    <h:outputText id="txtSaldoPeriodo" value="#{controleCaixaMB.saldoPeriodo}" >
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputText>
+                                </div>                                 
+                            </td>
+                        </tr>
+                    </table>                      
+                </f:facet>
+                <p:column headerText="Data/Hora">
+                    <h:outputText value="#{lcto.dataHora}">
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="GMT-3" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Categoria">
+                    <h:outputText value="#{lcto.categoria.descricao}" />
+                </p:column>
+                <p:column headerText="Entidade/Pessoa">
+                    <h:outputText value="#{lcto.pessoa.descricao}" />
+                </p:column>
+                <p:column headerText="Usuário">
+                    <h:outputText value="#{lcto.usuario.descricao}" />
+                </p:column>
+                <p:column headerText="Valor">
+                    <h:outputText value="#{lcto.valorStr}" />
+                </p:column>
+            </p:dataTable>
+            <p:contextMenu for="dados">
+                <p:menuitem value="Deletar" update="frmConsulta:confDialog" action="#{controleCaixaMB.validaRemocao()}" />
+            </p:contextMenu>
+            
+        </h:form>
+    </h:body>
+    <script language="javascript" type="text/javascript" src="./jquery-3.1.1.slim.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function()
+        {
+            $('[id$=btAtualizar]').trigger('click');
+        });
+    </script>
+    <script>
+      function atualizarNovoParceiro(selecao){          
+          if (selecao) {
+              var element = document.getElementById('frmCadastro:cdPessoaTxtLb');
+              element.style.display = 'none';
+              element = document.getElementById('frmCadastro:cdPessoaTxt');
+              element.style.display = 'none';
+          } else {
+              var element = document.getElementById('frmCadastro:cdPessoaTxtLb');
+              element.style.display = 'block';
+              element = document.getElementById('frmCadastro:cdPessoaTxt');
+              element.style.display = 'block';
+          }
+      }
+  </script>
+</html>
+

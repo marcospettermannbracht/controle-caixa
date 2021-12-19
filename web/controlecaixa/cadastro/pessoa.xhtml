@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Controle de Caixa - Pessoas/Entidades</title>
+    </h:head>
+    <h:body>
+        <ui:insert name="topo">
+            <ui:include src="/controlecaixa/menu.xhtml" />
+        </ui:insert>
+        <h:form id="frmCadastro" >
+            <p:dialog modal="true" widgetVar="dlgCadastro" id="panelDlgCadastro" 
+                      header="Nova Pessoa/Entidade"
+                      draggable="true" closable="true" resizable="false">
+                <h:panelGrid columns="2" id="gridDados" styleClass="styleGrid">
+                    <h:outputLabel value="Código: " for="cdPessoa"/>                    
+                    <p:inputText id="cdPessoa" value="#{pessoaMB.novaPessoa.codigo}" type="number"
+                                 validatorMessage="Informe um código maior que zero.">
+                        <f:validateLongRange minimum="1" />
+                    </p:inputText>
+                    <h:outputLabel value="CPF/CNPJ: " for="docPessoa"/>                    
+                    <p:inputText id="docPessoa" value="#{pessoaMB.novaPessoa.documento}"  
+                                 validatorMessage="CPF/CNPJ inválido.">
+                        <f:validateRegex pattern="^$|(\d{11})|(\d{14})" />
+                    </p:inputText>
+                    <h:outputLabel value="Nome: " for="nmPessoa"/>                    
+                    <p:inputText id="nmPessoa" value="#{pessoaMB.novaPessoa.descricao}" required="true" 
+                                 requiredMessage="Informe o nome da pessoa/entidade."/>
+                    <h:outputLabel value="Tipo: " for="tpPessoa"/>    
+                    <p:selectOneMenu value="#{pessoaMB.novaPessoa.tipo}" id="tpPessoa"
+                                     required="true" requiredMessage="O tipo deve ser informado. ">
+                        <f:selectItems value="#{pessoaMB.tipos}" />
+                    </p:selectOneMenu>
+                </h:panelGrid>                
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="ui-icon ui-icon-disk" action="#{pessoaMB.salvarPessoa()}" process="@form"
+				     update=":frmConsulta frmCadastro:gridDados :growl" style="left:auto;font-weight:bold;"/>                    
+                </f:facet>
+            </p:dialog>
+        </h:form>
+        <h:form id="frmConsulta">
+            <p:confirmDialog id="confDialog"
+                             message="Deseja realmente remover a pessoa/entidade #{pessoaMB.novaPessoa.descricao}?"
+                             header="Confirmação" severity="alert" widgetVar="confirmDelete">
+                    <center>
+                            <p:commandButton update=":frmConsulta :growl"
+                                    oncomplete="PF('confirmDelete').hide()" icon="ui-icon-check "
+                                    value="Confirmar" action="#{pessoaMB.deletarPessoa()}">
+                            </p:commandButton>
+                            <p:commandButton id="decline" value="Cancelar"
+                                    onclick="PF('confirmDelete').hide()" type="button"
+                                    icon="ui-icon-circle-close" />
+                    </center>
+            </p:confirmDialog>
+            <p:dataTable id="dados" var="pes" value="#{pessoaMB.pessoas}" emptyMessage="Nenhuma pessoa/entidade cadastrada."
+                         selection="#{pessoaMB.novaPessoa}" selectionMode="single" rowKey="#{pes.id}">
+                <f:facet name="header">
+                    <table>
+                        <tr>
+                            <td class="noPadding">
+                                <div align="left">
+                                    <p:commandButton value="Nova Pessoa/Entidade" styleClass="ui-priority-primary" 
+                                              update="frmCadastro" oncomplete="PF('dlgCadastro').show();"
+                                              action="#{pessoaMB.setNovaPessoa(null)}" icon="ui ui-icon-document" />
+                                </div>                                
+                            </td>
+                            <td class="noPadding">
+                                <div>
+                                    Pessoas/Entidades
+                                </div>                                
+                            </td>
+                            <td class="noPadding">
+                                <div align="right">
+                                    <p:commandButton value="Atualizar" action="#{pessoaMB.setPessoas(null)}"
+                                                     update=":frmConsulta" icon="ui ui-icon-refresh" />
+                                </div>                                
+                            </td>
+                        </tr>
+                    </table>
+                    
+                </f:facet>
+                <p:column headerText="Código">
+                    <h:outputText value="#{pes.codigo}" />
+                </p:column>                
+                <p:column headerText="CPF/CNPJ">
+                    <h:outputText value="#{pes.documentoFormatado}" />
+                </p:column>    
+                <p:column headerText="Nome">
+                    <h:outputText value="#{pes.descricao}" />
+                </p:column>    
+                <p:column headerText="Tipo">
+                    <h:outputText value="#{pes.tipo}" />
+                </p:column>
+            </p:dataTable> 
+            <p:contextMenu for="dados">
+                <p:menuitem value="Editar" update="frmCadastro" oncomplete="PF('dlgCadastro').show();"/>
+                <p:menuitem value="Deletar" update="frmConsulta" oncomplete="PF('confirmDelete').show()" />
+            </p:contextMenu>
+        </h:form>
+    </h:body>
+</html>

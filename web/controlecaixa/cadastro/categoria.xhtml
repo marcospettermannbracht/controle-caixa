@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Controle de Caixa - Categorias</title>
+    </h:head>
+    <h:body>
+        <ui:insert name="topo">
+            <ui:include src="/controlecaixa/menu.xhtml" />
+        </ui:insert>
+        <h:form id="frmCadastro" >
+            <p:dialog modal="true" widgetVar="dlgCadastro" id="panelDlgCadastro" 
+                      header="Nova Categoria"
+                      draggable="true" closable="true" resizable="false">
+                <h:panelGrid columns="2" id="gridDados" styleClass="styleGrid">
+                    <h:outputLabel value="Código: " for="cdCateg"/>                    
+                    <p:inputText id="cdCateg" value="#{categoriaMB.novaCategoria.codigo}" type="number"
+                                 validatorMessage="Informe um código maior que zero.">
+                        <f:validateLongRange minimum="1" />
+                    </p:inputText>
+                    <h:outputLabel value="Nome: " for="nmCateg"/>                    
+                    <p:inputText id="nmCateg" value="#{categoriaMB.novaCategoria.descricao}" required="true" 
+                                 requiredMessage="Informe o nome da categoria."/>
+                    <h:outputLabel value="Tipo: " for="tpCateg"/>
+                    <p:selectOneMenu value="#{categoriaMB.novaCategoria.tipo}" id="tpCateg"
+                                     required="true" requiredMessage="O tipo deve ser informado. ">
+                        <f:selectItems value="#{categoriaMB.tipos}" />
+                    </p:selectOneMenu>
+                </h:panelGrid>                
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="ui-icon ui-icon-disk" action="#{categoriaMB.salvarCategoria()}" process="@form"
+				     update=":frmConsulta frmCadastro:gridDados :growl" style="left:auto;font-weight:bold;"/>                    
+                </f:facet>
+            </p:dialog>
+        </h:form>
+        <h:form id="frmConsulta">
+            <p:confirmDialog id="confDialog"
+                             message="Deseja realmente remover a categoria #{categoriaMB.novaCategoria.descricao}?"
+                             header="Confirmação" severity="alert" widgetVar="confirmDelete">
+                    <center>
+                            <p:commandButton update=":frmConsulta :growl"
+                                    oncomplete="PF('confirmDelete').hide()" icon="ui-icon-check "
+                                    value="Confirmar" action="#{categoriaMB.deletarCategoria()}">
+                            </p:commandButton>
+                            <p:commandButton id="decline" value="Cancelar"
+                                    onclick="PF('confirmDelete').hide()" type="button"
+                                    icon="ui-icon-circle-close" />
+                    </center>
+            </p:confirmDialog>
+            <p:dataTable id="dados" var="ctg" value="#{categoriaMB.categorias}" emptyMessage="Nenhuma categoria cadastrada."
+                         selection="#{categoriaMB.novaCategoria}" selectionMode="single" rowKey="#{ctg.id}">
+                <f:facet name="header">
+                    <table>
+                        <tr>
+                            <td class="noPadding">
+                                <div align="left">
+                                    <p:commandButton value="Nova Categoria" styleClass="ui-priority-primary" 
+                                              update="frmCadastro" oncomplete="PF('dlgCadastro').show();"
+                                              action="#{categoriaMB.setNovaCategoria(null)}" icon="ui ui-icon-document" />
+                                </div>                                
+                            </td>
+                            <td class="noPadding">
+                                <div>
+                                    Categorias
+                                </div>                                
+                            </td>
+                            <td class="noPadding">
+                                <div align="right">
+                                    <p:commandButton value="Atualizar" action="#{categoriaMB.setCategorias(null)}"
+                                                     update=":frmConsulta" icon="ui ui-icon-refresh" />
+                                </div>                                
+                            </td>
+                        </tr>
+                    </table>                    
+                </f:facet>
+                <p:column headerText="Código">
+                    <h:outputText value="#{ctg.codigo}" />
+                </p:column>                
+                <p:column headerText="Categoria">
+                    <h:outputText value="#{ctg.descricao}" />
+                </p:column>
+                <p:column headerText="Tipo">
+                    <h:outputText value="#{ctg.tipo}" />
+                </p:column>
+            </p:dataTable>
+            <p:contextMenu for="dados">
+                <p:menuitem value="Editar" update="frmCadastro" oncomplete="PF('dlgCadastro').show();"/>
+                <p:menuitem value="Deletar" update="frmConsulta" oncomplete="PF('confirmDelete').show()" />
+            </p:contextMenu>
+        </h:form>
+    </h:body>
+</html>

@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Controle de Caixa - Usuários</title>
+    </h:head>
+    <h:body>
+        <ui:insert name="topo">
+            <ui:include src="/controlecaixa/menu.xhtml" />
+        </ui:insert>
+        <h:form id="frmCadastro" >
+            <p:dialog modal="true" widgetVar="dlgCadastro" id="panelDlgCadastro" 
+                      header="Novo Usuário"
+                      draggable="true" closable="true" resizable="false">
+                <h:panelGrid columns="2" id="gridDados" styleClass="styleGrid">
+                    <h:outputLabel value="Código: " for="cdUsuario"/>                    
+                    <p:inputText id="cdUsuario" value="#{usuarioMB.novoUsuario.codigo}" type="number"
+                                 validatorMessage="Informe um código maior que zero.">
+                        <f:validateLongRange minimum="1" />
+                    </p:inputText>
+                    <h:outputLabel value="Nome: " for="nmUsuario"/>                    
+                    <p:inputText id="nmUsuario" value="#{usuarioMB.novoUsuario.descricao}" required="true" 
+                                 requiredMessage="Informe o nome do usuário."/>
+                    <h:outputLabel value="Administrador: " for="stAdmin" />
+                    <h:selectBooleanCheckbox id="stAdmin" value="#{usuarioMB.novoUsuario.administrador}" />
+                </h:panelGrid>                
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="ui-icon ui-icon-disk" action="#{usuarioMB.salvarUsuario()}" process="@form"
+				     update=":frmConsulta frmCadastro:gridDados :growl frmCadastro:gridDadosNovaSenha" style="left:auto;font-weight:bold;"/>                    
+                </f:facet>
+            </p:dialog>
+            <p:dialog modal="true" widgetVar="dlgNovaSenha" 
+                      header="Nova Senha"
+                      draggable="true" closable="false" resizable="false">
+                <h:panelGrid columns="2" id="gridDadosNovaSenha" styleClass="styleGrid">
+                    <h:outputLabel value="Senha Gerada: " for="novaSenha" /> 
+                    <h:outputText id="novaSenha" value="#{usuarioMB.senhaDescripto}" style="font-weight:bold;" />
+                </h:panelGrid>            
+                <f:facet name="footer">
+                    <p:commandButton value="Fechar" icon="ui-icon-circle-close" onclick="PF('dlgNovaSenha').hide()"
+				     update=":frmConsulta :growl" style="left:auto;font-weight:bold;"/>                    
+                </f:facet>
+            </p:dialog>
+        </h:form>
+        <h:form id="frmConsulta">
+            <p:confirmDialog id="confDialog"
+                             message="Deseja realmente remover o usuário #{usuarioMB.novoUsuario.descricao}?"
+                             header="Confirmação" severity="alert" widgetVar="confirmDelete">
+                    <center>
+                            <p:commandButton update=":frmConsulta :growl"
+                                    oncomplete="PF('confirmDelete').hide()" icon="ui-icon-check "
+                                    value="Confirmar" action="#{usuarioMB.deletarUsuario()}">
+                            </p:commandButton>
+                            <p:commandButton id="decline" value="Cancelar"
+                                    onclick="PF('confirmDelete').hide()" type="button"
+                                    icon="ui-icon-circle-close" />
+                    </center>
+            </p:confirmDialog>
+            <p:dataTable id="dados" var="usu" value="#{usuarioMB.usuarios}" emptyMessage="Nenhum usuário cadastrado."
+                         selection="#{usuarioMB.novoUsuario}" selectionMode="single" rowKey="#{usu.id}">
+                <f:facet name="header">
+                    <table>
+                        <tr>
+                            <td class="noPadding">
+                                <div align="left">
+                                    <p:commandButton value="Novo Usuário" styleClass="ui-priority-primary" 
+                                              update="frmCadastro" oncomplete="PF('dlgCadastro').show();"
+                                              action="#{usuarioMB.setNovoUsuario(null)}" icon="ui ui-icon-document" />
+                                </div>                                
+                            </td>
+                            <td class="noPadding">
+                                <div>
+                                    Usuários
+                                </div>                                
+                            </td>
+                            <td class="noPadding">
+                                <div align="right">
+                                    <p:commandButton value="Atualizar" action="#{usuarioMB.setUsuarios(null)}"
+                                                     update=":frmConsulta" icon="ui ui-icon-refresh" />
+                                </div>                                
+                            </td>
+                        </tr>
+                    </table>
+                    
+                </f:facet>
+                <p:column headerText="Código">
+                    <h:outputText value="#{usu.codigo}" />
+                </p:column>                
+                <p:column headerText="Nome">
+                    <h:outputText value="#{usu.descricao}" />
+                </p:column>    
+                <p:column headerText="Administrador">
+                    <h:selectBooleanCheckbox value="#{usu.administrador}" disabled="true" />
+                </p:column>    
+            </p:dataTable> 
+            <p:contextMenu for="dados">
+                <p:menuitem value="Editar" update="frmCadastro" oncomplete="PF('dlgCadastro').show();"/>
+                <p:menuitem value="Deletar" update="frmConsulta" oncomplete="PF('confirmDelete').show()" />
+            </p:contextMenu>
+        </h:form>
+    </h:body>
+</html>

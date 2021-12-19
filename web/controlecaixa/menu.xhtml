@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui">
+    <body>
+        <style type="text/css">
+            .noPadding
+            {
+                    padding:0px !important;
+                    border:none !important;
+            }            
+        </style>
+        <p:growl id="growl" showDetail="true" showSummary="false" life="10000" autoUpdate="true"/>
+        <h:form id="formEdicao">
+            <p:dialog modal="true" widgetVar="dlgSenha" id="panelDlgSenha" 
+                      header="Alterar Senha"
+                      draggable="true" closable="true" resizable="false">
+                <h:panelGrid columns="2" id="gridDados" styleClass="styleGrid">
+                    <h:outputLabel value="Nova senha: " for="dsSenha"/>      
+                    <p:password id="dsSenha" value="#{usuarioMB.novoUsuario.senha}" />
+                    <h:outputLabel value="Confirme a senha: " for="dsSenha2"/>      
+                    <p:password id="dsSenha2" value="#{usuarioMB.confirmacaoSenha}" />
+                </h:panelGrid>                
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="ui-icon ui-icon-disk" action="#{usuarioMB.salvarSenha()}" process="@form"
+                                     update=":growl" style="left:auto;font-weight:bold;"/>                    
+                </f:facet>
+            </p:dialog>
+        </h:form>
+        <h:form>
+            <p:menubar>
+                <p:menuitem value="Resumo" icon="ui ui-icon-home" action="/controlecaixa/resumo.xhtml?faces-redirect=true" />
+                <p:submenu label="Cadastros" icon="ui ui-icon-gear" rendered="#{dadosSessao.usuario.administrador}">
+                    <p:menuitem value="Caixa" icon="ui ui-icon-cart" action="/controlecaixa/cadastro/caixa.xhtml?faces-redirect=true" />
+                    <p:separator />
+                    <p:menuitem value="Categoria" icon="ui ui-icon-tag" action="/controlecaixa/cadastro/categoria.xhtml?faces-redirect=true" />
+                    <p:separator />
+                    <p:menuitem value="Pessoa/Entidade" icon="ui ui-icon-contact" action="/controlecaixa/cadastro/pessoa.xhtml?faces-redirect=true" />
+                    <p:separator />
+                    <p:menuitem value="Usuário" icon="ui ui-icon-person" action="/controlecaixa/cadastro/usuario.xhtml?faces-redirect=true" />
+                </p:submenu> 
+                <f:facet name="options">
+                    <h:outputLabel value="Usuário: #{dadosSessao.usuario.descricao} " />
+                    <p:commandButton value="Alterar Senha" icon="ui ui-icon-locked" 
+                                     oncomplete="PF('dlgSenha').show();" action="#{usuarioMB.setNovoUsuario(dadosSessao.usuario)}"/>
+                    <p:commandButton value="Sair" icon="ui ui-icon-arrowreturnthick-1-w" 
+                                     action="#{dadosSessao.sair()}"/>
+                </f:facet>
+            </p:menubar>
+        </h:form>
+    </body>
+</html>

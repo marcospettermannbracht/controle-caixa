@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Controle de Caixa - Caixas</title>
+    </h:head>
+    <h:body>
+        <ui:insert name="topo">
+            <ui:include src="/controlecaixa/menu.xhtml" />
+        </ui:insert>
+        <h:form id="frmCadastro" >
+            <p:dialog modal="true" widgetVar="dlgCadastro" id="panelDlgCadastro" 
+                      header="Novo Caixa"
+                      draggable="true" closable="true" resizable="false">
+                <h:panelGrid columns="2" id="gridDados" styleClass="styleGrid">
+                    <h:outputLabel value="Código: " for="cdCaixa"/>                    
+                    <p:inputText id="cdCaixa" value="#{caixaMB.novoCaixa.codigo}" type="number"
+                                 validatorMessage="Informe um código maior que zero.">
+                        <f:validateLongRange minimum="1" />
+                    </p:inputText>
+                    <h:outputLabel value="Nome: " for="nmCaixa"/>                    
+                    <p:inputText id="nmCaixa" value="#{caixaMB.novoCaixa.descricao}" required="true" 
+                                 requiredMessage="Informe o nome do caixa."/>
+                </h:panelGrid>                
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="ui-icon ui-icon-disk" action="#{caixaMB.salvarCaixa()}" process="@form"
+				     update=":frmConsulta frmCadastro:gridDados :growl" style="left:auto;font-weight:bold;"/>                    
+                </f:facet>
+            </p:dialog>
+        </h:form>
+        <h:form id="frmConsulta">
+            <p:confirmDialog id="confDialog"
+                             message="Deseja realmente remover o caixa #{caixaMB.novoCaixa.descricao}?"
+                             header="Confirmação" severity="alert" widgetVar="confirmDelete">
+                    <center>
+                            <p:commandButton update=":frmConsulta :growl"
+                                    oncomplete="PF('confirmDelete').hide()" icon="ui-icon-check "
+                                    value="Confirmar" action="#{caixaMB.deletarCaixa()}">
+                            </p:commandButton>
+                            <p:commandButton id="decline" value="Cancelar"
+                                    onclick="PF('confirmDelete').hide()" type="button"
+                                    icon="ui-icon-circle-close" />
+                    </center>
+            </p:confirmDialog>
+            <p:dataTable id="dados" var="cx" value="#{caixaMB.caixas}" emptyMessage="Nenhum caixa cadastrado."
+                         selection="#{caixaMB.novoCaixa}" selectionMode="single" rowKey="#{cx.id}">
+                <f:facet name="header">
+                    <table>
+                        <tr>
+                            <td class="noPadding">
+                                <div align="left">
+                                    <p:commandButton value="Novo Caixa" styleClass="ui-priority-primary" 
+                                              update="frmCadastro" oncomplete="PF('dlgCadastro').show();"
+                                              action="#{caixaMB.setNovoCaixa(null)}" icon="ui ui-icon-document" />
+                                </div>                                
+                            </td>
+                            <td class="noPadding">
+                                <div>
+                                    Caixas
+                                </div>                                
+                            </td>
+                            <td class="noPadding">
+                                <div align="right">
+                                    <p:commandButton value="Atualizar" action="#{caixaMB.setCaixas(null)}"
+                                                     update=":frmConsulta" icon="ui ui-icon-refresh"/>
+                                </div>                                
+                            </td>
+                        </tr>
+                    </table>
+                    
+                </f:facet>
+                <p:column headerText="Código">
+                    <h:outputText value="#{cx.codigo}" />
+                </p:column>                
+                <p:column headerText="Caixa">
+                    <h:outputText value="#{cx.descricao}" />
+                </p:column>
+                <p:column headerText="Saldo">
+                    <h:outputText value="#{cx.saldo}">
+                        <f:convertNumber pattern="#0.00" />
+                    </h:outputText>
+                </p:column>
+            </p:dataTable> 
+            <p:contextMenu for="dados">
+                <p:menuitem value="Editar" update="frmCadastro" oncomplete="PF('dlgCadastro').show();"/>
+                <p:menuitem value="Deletar" update="frmConsulta" oncomplete="PF('confirmDelete').show()" />
+            </p:contextMenu>
+        </h:form>
+    </h:body>
+</html>
